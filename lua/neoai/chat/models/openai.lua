@@ -1,6 +1,7 @@
-local utils = require("neoai.utils")
 local log = require("neoai.logger")
 local config = require("neoai.config")
+local curl = require("plenary.curl")
+local utils = require("neoai.utils")
 
 ---@class OpenAIModel
 ---OpenAIModel is a model that uses the OpenAI API to send and recieve messages
@@ -9,50 +10,59 @@ local config = require("neoai.config")
 ---@field send_to_model fun(chat_history: ChatHistory, on_stdout_chunk: fun(chunk: string), on_complete: fun(err?: string, output?: string)) Sends chat_history to the model
 
 local M = {}
-
 M.name = "OpenAI"
 
-M._chunks = {}
+local handler
+local chunks = {}
 local raw_chunks = {}
 
+---@brief Cancel the current stream and shut down the handler
+M.cancel_stream = function()
+  if handler ~= nil then
+    handler:shutdown()
+    handler = nil
+  end
+end
+
 M.get_current_output = function()
-    return table.concat(M._chunks, "")
+	return table.concat(chunks, "")
 end
 
 ---@param chunk string
 ---@param on_stdout_chunk fun(chunk: string) Function to call whenever a stdout chunk occurs
-M._recieve_chunk = function(chunk, on_stdout_chunk)
-    log.trace("Recieved chunk: " .. chunk)
-    for line in chunk:gmatch("[^\n]+") do
-        local raw_json = string.gsub(line, "^data: ", "")
+M._receive_chunk = function(chunk, on_stdout_chunk)
+	local function safely_extract_delta_content(decoded_json)
+		local path = decoded_json.choices
+		if not path then
+			return nil
+		end
 
-        table.insert(raw_chunks, raw_json)
-        local ok, path = pcall(vim.json.decode, raw_json)
-        if not ok then
-            goto continue
-        end
+		path = path[1]
+		if not path then
+			return nil
+		end
 
-        path = path.choices
-        if path == nil then
-            goto continue
-        end
-        path = path[1]
-        if path == nil then
-            goto continue
-        end
-        path = path.delta
-        if path == nil then
-            goto continue
-        end
-        path = path.content
-        if path == nil then
-            goto continue
-        end
-        on_stdout_chunk(path)
-        -- append_to_output(path, 0)
-        table.insert(M._chunks, path)
-        ::continue::
-    end
+		path = path.delta
+		if not path then
+			return nil
+		end
+
+		return path.content
+	end
+	-- Remove "data:" prefix from chunk
+	local raw_json = string.gsub(chunk, "%s*data:%s*", "")
+	table.insert(raw_chunks, raw_json)
+
+	local ok, decoded_json = pcall(vim.json.decode, raw_json)
+	if not ok then
+		return -- Ignore invalid JSON chunks
+	end
+
+	local delta_content = safely_extract_delta_content(decoded_json)
+	if delta_content then
+		table.insert(chunks, delta_content)
+		on_stdout_chunk(delta_content)
+	end
 end
 
 ---@param chat_history ChatHistory
@@ -61,12 +71,12 @@ end
 M.send_to_model = function(chat_history, on_stdout_chunk, on_complete)
     local api_key = config.options.open_ai.api_key.get()
 
-    local data = {
-        model = chat_history.model,
-        stream = true,
-        messages = chat_history.messages,
-    }
-    data = vim.tbl_deep_extend("force", {}, data, chat_history.params)
+	local data = {
+		model = chat_history.model,
+		stream = true,
+		messages = chat_history.messages,
+	}
+	data = vim.tbl_deep_extend("force", {}, data, chat_history.params)
 
     chunks = {}
     raw_chunks = {}
