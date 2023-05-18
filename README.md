@@ -1,4 +1,4 @@
-![NeoAI tests](https://github.com/Bryley/neoai.nvim/actions/workflows/main.yml/badge.svg)
+![NeoAI tests](https://github.com/mandos/neoai.nvim/actions/workflows/main.yml/badge.svg?branch=develop)
 # NeoAI
 NeoAI is a Neovim plugin that brings the power of OpenAI's GPT-4 directly to
 your editor. It helps you generate code, rewrite text, and even get suggestions
