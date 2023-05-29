@@ -51,10 +51,9 @@ local function log(message, level)
     if log_path == nil then
         error("log_path is not set")
     end
-    local fp = io.open(log_path, "a")
-    if fp == nil then
-        error("Failed to open log file: " .. log_path)
-    end
+    -- NOTE: Without it test fails, is any better way to achive it?
+    vim.fn.mkdir(vim.fn.fnamemodify(log_path, ":h"), "p")
+    local fp = assert(io.open(log_path, "a"), "Failed to open log file: " .. log_path)
     -- NOTE: Maybe it should be customizable (date or full logging msg)?
     local date = os.date("%Y-%m-%d %H:%M:%S")
     local level_name = level_names[level]
