@@ -3,6 +3,7 @@ local chat = require("neoai.chat")
 local inject = require("neoai.inject")
 local ChatHistory = require("neoai.chat.history")
 local config = require("neoai.config")
+local log = require("neoai.logger")
 local shortcuts = require("neoai.shortcuts")
 local utils = require("neoai.utils")
 
@@ -34,6 +35,7 @@ end
 ---@param options Options | nil The options for the plugin
 M.setup = function(options)
     config.setup(options)
+    log.setup(config.options.logger)
     chat.setup_models()
     shortcuts.setup_shortcuts()
 end

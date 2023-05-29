@@ -1,0 +1,8 @@
+{
+    "workspace": {
+        "ignoreDir": [
+            ".tests"
+        ]
+    },
+    "workspace.checkThirdParty": false
+}

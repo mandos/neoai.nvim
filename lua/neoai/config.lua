@@ -12,9 +12,14 @@ M.get_defaults = function()
         ui = {
             output_popup_text = "NeoAI",
             input_popup_text = "Prompt",
-            width = 30, -- As percentage eg. 30%
+            width = 30,               -- As percentage eg. 30%
             output_popup_height = 80, -- As percentage eg. 80%
             submit = "<Enter>",
+        },
+        diagnostic = {
+            notification_level = vim.log.levels.INFO,
+            log_level = vim.log.levels.OFF,
+            log_path = vim.fn.stdpath("log") .. "/neoai.log",
         },
         models = {
             {
@@ -118,6 +123,11 @@ end
 ---@field model string | string[] The name of the model to use or list of model names to use
 ---@field params table<string, string> | nil Params to pass into the model(s) or nil is none.
 
+---@class Diagnostic_Options
+---@field notification_level integer The level of notification to show
+---@field log_level integer The level of logging to show
+---@field log_path string The file to log to
+
 ---@class Inject_Options
 ---@field cutoff_width integer | nil When injecting if the text becomes longer than this then it should go to a new line, if nil then ignore
 
@@ -145,6 +155,7 @@ end
 ---@field ui UI_Options UI configurations
 ---@field model string The OpenAI model to use by default @depricated
 ---@field models Model_Options[] A list of different model options to use. First element will be default
+---@field logger Diagnostic_Options Logger options
 ---@field register_output table<string, fun(output: string): string> A table with a register as the key and a function that takes the raw output from the AI and outputs what you want to save into that register
 ---@field inject Inject_Options The inject options
 ---@field prompts Prompt_Options The custom prompt options
