@@ -7,6 +7,7 @@
 ---@field warn function
 ---@field error function
 ---@field config Diagnostic_Options
+
 local M = {}
 
 

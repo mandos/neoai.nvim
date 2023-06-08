@@ -1,4 +1,4 @@
-local logger = require("neoai.logger")
+local log = require("neoai.logger")
 ---@class Config
 ---@field options Options
 ---@field setup function
@@ -61,7 +61,7 @@ M.get_defaults = function()
                         local env_name
                         if M.options.open_api_key_env then
                             env_name = M.options.open_api_key_env
-                            logger.deprecation("config.open_api_key_env", "config.open_ai.api_key.env")
+                            log.deprecation("config.open_api_key_env", "config.open_ai.api_key.env")
                         else
                             env_name = M.options.open_ai.api_key.env
                         end
@@ -73,7 +73,7 @@ M.get_defaults = function()
                     end
                     local msg = M.options.open_ai.api_key.env
                         .. " environment variable is not set, and open_api_key.value is empty"
-                    logger.error(msg)
+                    log.error(msg)
                     error(msg)
                 end,
             },
@@ -155,7 +155,7 @@ end
 ---@field ui UI_Options UI configurations
 ---@field model string The OpenAI model to use by default @depricated
 ---@field models Model_Options[] A list of different model options to use. First element will be default
----@field logger Diagnostic_Options Logger options
+---@field diagnostic Diagnostic_Options Logger options
 ---@field register_output table<string, fun(output: string): string> A table with a register as the key and a function that takes the raw output from the AI and outputs what you want to save into that register
 ---@field inject Inject_Options The inject options
 ---@field prompts Prompt_Options The custom prompt options

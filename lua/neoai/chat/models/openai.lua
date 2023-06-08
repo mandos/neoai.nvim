@@ -1,7 +1,13 @@
 local utils = require("neoai.utils")
+local log = require("neoai.logger")
 local config = require("neoai.config")
 
----@type ModelModule
+---@class OpenAIModel
+---OpenAIModel is a model that uses the OpenAI API to send and recieve messages
+---@field name string
+---@field get_current_output fun(): string Get's current output of the model
+---@field send_to_model fun(chat_history: ChatHistory, on_stdout_chunk: fun(chunk: string), on_complete: fun(err?: string, output?: string)) Sends chat_history to the model
+
 local M = {}
 
 M.name = "OpenAI"
@@ -16,6 +22,7 @@ end
 ---@param chunk string
 ---@param on_stdout_chunk fun(chunk: string) Function to call whenever a stdout chunk occurs
 M._recieve_chunk = function(chunk, on_stdout_chunk)
+    log.trace("Recieved chunk: " .. chunk)
     for line in chunk:gmatch("[^\n]+") do
         local raw_json = string.gsub(line, "^data: ", "")
 
@@ -63,6 +70,7 @@ M.send_to_model = function(chat_history, on_stdout_chunk, on_complete)
 
     chunks = {}
     raw_chunks = {}
+    log.debug("Sending to OpenAI: " .. vim.inspect(data))
     utils.exec("curl", {
         "--silent",
         "--show-error",
@@ -82,6 +90,7 @@ M.send_to_model = function(chat_history, on_stdout_chunk, on_complete)
         if ok then
             if json.error ~= nil then
                 on_complete(json.error.message, nil)
+                log.error(json.error)
                 return
             end
         end

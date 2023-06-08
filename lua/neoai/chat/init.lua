@@ -1,3 +1,4 @@
+local log = require("neoai.logger")
 local config = require("neoai.config")
 local ChatHistory = require("neoai.chat.history")
 
@@ -47,6 +48,7 @@ end
 ---Gets the current selected model
 ---@return { name: ModelModule, model: string, params: table<string, string> | nil } current_model The current model
 M.get_current_model = function ()
+    log.debug("Getting current model")
     return M.models[M.selected_model+1]
 end
 

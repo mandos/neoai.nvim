@@ -1,10 +1,10 @@
-local ui = require("neoai.ui")
 local chat = require("neoai.chat")
 local inject = require("neoai.inject")
-local ChatHistory = require("neoai.chat.history")
+-- local ChatHistory = require("neoai.chat.history")
 local config = require("neoai.config")
 local log = require("neoai.logger")
 local shortcuts = require("neoai.shortcuts")
+local commands = require("neoai.commands")
 local utils = require("neoai.utils")
 
 local M = {}
@@ -35,9 +35,10 @@ end
 ---@param options Options | nil The options for the plugin
 M.setup = function(options)
     config.setup(options)
-    log.setup(config.options.logger)
+    log.setup(config.options.diagnostic)
     chat.setup_models()
     shortcuts.setup_shortcuts()
+    commands.setup()
 end
 
 ---Toggles opening and closing neoai window
